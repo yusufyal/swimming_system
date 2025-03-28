@@ -47,7 +47,8 @@ jobs:
     - name: Build assets
       run: |
         npm run build
-        ls -la public/assets
+        mkdir -p public/assets/plugins
+        cp -r resources/assets/* public/assets/ || true
         
     - name: Clear caches
       run: |
@@ -71,7 +72,6 @@ jobs:
         username: ${{ secrets.STAGING_USERNAME }}
         password: ${{ secrets.STAGING_PASSWORD }}
         server-dir: /public_html/
-        dry-run: true
         exclude: |
           **/.git*
           **/.git*/**
