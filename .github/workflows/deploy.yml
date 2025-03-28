@@ -47,7 +47,7 @@ jobs:
     - name: Build assets
       run: |
         npm run build
-        cp public/build/assets/* public/assets/
+        ls -la public/assets
         
     - name: Clear caches
       run: |
@@ -71,6 +71,7 @@ jobs:
         username: ${{ secrets.STAGING_USERNAME }}
         password: ${{ secrets.STAGING_PASSWORD }}
         server-dir: /public_html/
+        dry-run: true
         exclude: |
           **/.git*
           **/.git*/**
@@ -78,6 +79,7 @@ jobs:
           **/tests/**
           **/storage/framework/cache/**
           **/.env*
+          **/bootstrap/cache/**
 
     # Deploy to production
     - name: Deploy to Production
@@ -94,4 +96,5 @@ jobs:
           **/node_modules/**
           **/tests/**
           **/storage/framework/cache/**
-          **/.env* 
+          **/.env*
+          **/bootstrap/cache/** 

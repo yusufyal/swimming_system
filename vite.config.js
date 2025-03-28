@@ -13,8 +13,8 @@ export default defineConfig({
         }),
     ],
     build: {
-        outDir: 'public/build',
-        assetsDir: 'assets',
+        outDir: 'public/assets',
+        assetsDir: '',
         manifest: true,
     },
 });
