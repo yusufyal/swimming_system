@@ -20,13 +20,18 @@ jobs:
         php-version: '8.2'
         extensions: mbstring, xml, ctype, iconv, intl, pdo_sqlite, dom, filter, gd, iconv, json, mbstring, pdo
         
-    - name: Copy environment file
+    - name: Create .env file
       run: |
         if [ "${{ github.ref }}" = "refs/heads/main" ]; then
           cp .env.production .env
         elif [ "${{ github.ref }}" = "refs/heads/staging" ]; then
           cp .env.staging .env
+        else
+          cp .env.example .env
         fi
+        
+    - name: Generate app key
+      run: php artisan key:generate --force
 
     - name: Install Composer dependencies
       run: composer install --no-dev --optimize-autoloader
@@ -41,9 +46,6 @@ jobs:
 
     - name: Build assets
       run: npm run build
-
-    - name: Generate app key
-      run: php artisan key:generate --force
 
     - name: Clear caches
       run: |
@@ -66,7 +68,7 @@ jobs:
         server: ${{ secrets.STAGING_SERVER }}
         username: ${{ secrets.STAGING_USERNAME }}
         password: ${{ secrets.STAGING_PASSWORD }}
-        server-dir: /staging.your-domain.com/public_html/
+        server-dir: /public_html/
         exclude: |
           **/.git*
           **/.git*/**
@@ -81,7 +83,7 @@ jobs:
         server: ${{ secrets.PROD_SERVER }}
         username: ${{ secrets.PROD_USERNAME }}
         password: ${{ secrets.PROD_PASSWORD }}
-        server-dir: /your-domain.com/public_html/
+        server-dir: /public_html/
         exclude: |
           **/.git*
           **/.git*/**
