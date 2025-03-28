@@ -1,0 +1,89 @@
+name: Deploy Application
+
+on:
+  push:
+    branches:
+      - main        # production
+      - staging     # staging
+      - dev         # development
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.2'
+        extensions: mbstring, xml, ctype, iconv, intl, pdo_sqlite, dom, filter, gd, iconv, json, mbstring, pdo
+        
+    - name: Copy environment file
+      run: |
+        if [ "${{ github.ref }}" = "refs/heads/main" ]; then
+          cp .env.production .env
+        elif [ "${{ github.ref }}" = "refs/heads/staging" ]; then
+          cp .env.staging .env
+        fi
+
+    - name: Install Composer dependencies
+      run: composer install --no-dev --optimize-autoloader
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v2
+      with:
+        node-version: '18'
+
+    - name: Install NPM dependencies
+      run: npm install
+
+    - name: Build assets
+      run: npm run build
+
+    - name: Generate app key
+      run: php artisan key:generate --force
+
+    - name: Clear caches
+      run: |
+        php artisan cache:clear
+        php artisan config:clear
+        php artisan route:clear
+        php artisan view:clear
+
+    - name: Cache config
+      run: |
+        php artisan config:cache
+        php artisan route:cache
+        php artisan view:cache
+
+    # Deploy to staging
+    - name: Deploy to Staging
+      if: github.ref == 'refs/heads/staging'
+      uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+      with:
+        server: ${{ secrets.STAGING_SERVER }}
+        username: ${{ secrets.STAGING_USERNAME }}
+        password: ${{ secrets.STAGING_PASSWORD }}
+        server-dir: /staging.your-domain.com/public_html/
+        exclude: |
+          **/.git*
+          **/.git*/**
+          **/node_modules/**
+          **/tests/**
+
+    # Deploy to production
+    - name: Deploy to Production
+      if: github.ref == 'refs/heads/main'
+      uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+      with:
+        server: ${{ secrets.PROD_SERVER }}
+        username: ${{ secrets.PROD_USERNAME }}
+        password: ${{ secrets.PROD_PASSWORD }}
+        server-dir: /your-domain.com/public_html/
+        exclude: |
+          **/.git*
+          **/.git*/**
+          **/node_modules/**
+          **/tests/** 
