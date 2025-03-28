@@ -44,11 +44,23 @@ jobs:
     - name: Install NPM dependencies
       run: npm install
 
-    - name: Build assets
+    - name: Setup asset directories
       run: |
-        npm run build
-        mkdir -p public/assets/plugins
-        cp -r resources/assets/* public/assets/ || true
+        mkdir -p public/assets/{plugins,fonts,js,css,images}
+        mkdir -p public/assets/plugins/{flatpickr,select2,sweetalert2,feather-icons,perfect-scrollbar}
+        mkdir -p public/assets/fonts/feather-font/css
+        mkdir -p public/assets/images/others
+
+    - name: Copy plugin files
+      run: |
+        cp -r resources/assets/plugins/* public/assets/plugins/ || true
+        cp -r resources/assets/fonts/* public/assets/fonts/ || true
+        cp -r resources/assets/images/* public/assets/images/ || true
+        cp -r resources/assets/js/* public/assets/js/ || true
+        cp -r resources/assets/css/* public/assets/css/ || true
+
+    - name: Build assets
+      run: npm run build
         
     - name: Clear caches
       run: |
